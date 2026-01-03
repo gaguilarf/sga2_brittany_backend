@@ -132,6 +132,7 @@ npm run test           # Ejecutar tests unitarios
 npm run test:e2e       # Ejecutar tests E2E
 npm run test:cov       # Tests con cobertura
 npm run lint           # Ejecutar linter
+npm run seed:roles     # Sembrar roles
 ```
 
 ## 📚 Documentación API

@@ -2,15 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable cookie parser
+  app.use(cookieParser());
 
   // Enable CORS
   app.enableCors({
     origin: [
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:3002',
       'https://sga.brittanygroup.edu.pe',
       'http://sga.brittanygroup.edu.pe',
     ],
@@ -35,13 +40,16 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('Brittany Group - Sistema de Gestión de Leads')
+    .setTitle('Brittany Group - Sistema de Gestión Académica')
     .setDescription(
-      'API REST para la gestión de leads del sistema de Brittany Group. ' +
-      'Permite crear, consultar, actualizar y eliminar leads de potenciales clientes.',
+      'API REST para el Sistema de Gestión Académica (SGA) de Brittany Group. ' +
+      'Incluye gestión de leads, autenticación, usuarios, alumnos, matrículas, pagos, y más.',
     )
-    .setVersion('1.1')
+    .setVersion('2.0')
+    .addTag('Authentication', 'Endpoints de autenticación y autorización')
     .addTag('Leads', 'Endpoints para la gestión de leads')
+    .addBearerAuth()
+    .addCookieAuth('access_token')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
