@@ -1,260 +1,114 @@
-# Brittany Group - Sistema de Gestión de Leads (Backend)
+# Brittany Group - SGA (Backend)
 
-API REST desarrollada con NestJS, TypeORM y MySQL para la gestión de leads de Brittany Group.
+Sistema de Gestión Académica (SGA) para Brittany Group. Backend desarrollado con un enfoque de **Clean Architecture** utilizando **NestJS**, **TypeORM** y **MySQL**.
 
-## 🚀 Deployment en Banahost
+## 🏗️ Arquitectura (Clean Architecture)
 
-### Configuración Inicial
+El proyecto está diseñado siguiendo los principios de arquitectura limpia, separando las preocupaciones en cuatro capas principales:
 
-1. **Variables de entorno en GitHub Secrets:**
-   - `FTP_HOST`: Host del servidor FTP de Banahost
-   - `FTP_USER`: Usuario FTP
-   - `FTP_PASS`: Contraseña FTP
+- **Domain**: Contiene la lógica central, entidades de negocio y definiciones de repositorios (interfaces).
+- **Application**: Contiene los servicios que implementan los casos de uso del sistema.
+- **Infrastructure**: Implementaciones técnicas como persistencia (TypeORM), adaptadores externos y configuraciones.
+- **Presentation**: Controladores REST que gestionan las peticiones HTTP y exponen la API.
 
-2. **Estructura en el servidor:**
-   ```
-   /public_html/
-   └── api/
-       ├── dist/
-       ├── node_modules/
-       ├── .env
-       ├── package.json
-       └── start.sh
-   ```
+### Módulos Implementados
 
-### Proceso de Deployment Automático
+1.  **Authentication**: Registro, login (JWT en Cookies) y RBAC.
+2.  **Users**: Gestión de usuarios y perfiles.
+3.  **Roles**: Gestión de permisos y roles del sistema.
+4.  **Campuses**: Gestión de sedes (Sedes).
+5.  **Plans**: Gestión de planes académicos (Planes).
+6.  **Students**: Gestión de alumnos.
+7.  **Enrollments**: Gestión de matrículas.
+8.  **Payments**: Registro de pagos y boletas.
+9.  **Grades**: Control de notas y desgloses de puntaje.
+10. **Attendance**: Control de asistencia diaria.
+11. **Leads**: Gestión de prospectos iniciales.
 
-El deployment se ejecuta automáticamente al hacer push a la rama `main`:
+---
 
-1. ✅ Checkout del código
-2. ✅ Instalación de dependencias de producción
-3. ✅ Build de la aplicación (TypeScript → JavaScript)
-4. ✅ Creación del paquete de deployment
-5. ✅ Subida vía FTP a `/api/`
+## 🚀 Implementación y Configuración
 
-### Configuración en el Servidor
+Sigue estos pasos para poner en marcha el proyecto en un entorno local:
 
-#### 1. Crear archivo `.env` en producción
-
-Conectarse al servidor vía SSH o panel de control y crear el archivo `.env`:
+### 1. Levantar Servicios con Docker
+El proyecto utiliza un contenedor para la base de datos MySQL. Asegúrate de tener Docker instalado.
 
 ```bash
-cd /public_html/api
-cp .env.production .env
-nano .env  # Editar si es necesario
+docker-compose up -d
 ```
+Esto levantará una base de datos MySQL 8.0 en el puerto configurado (por defecto `3306`).
 
-#### 2. Dar permisos de ejecución a los scripts
+### 2. Configuración de Base de Datos
+Una vez que el contenedor esté corriendo, la base de datos se conectará automáticamente. 
+
+> [!NOTE]
+> En desarrollo, el sistema está configurado para sincronizar automáticamente el esquema de la base de datos (`DB_SYNCHRONIZE=true`).
+
+### 3. Variables de Entorno
+Crea un archivo `.env` en la raíz del proyecto basándote en el archivo de ejemplo:
 
 ```bash
-chmod +x start.sh
-chmod +x stop.sh
-```
-
-#### 3. Iniciar el servidor
-
-```bash
-./start.sh
-```
-
-O usar PM2 (recomendado):
-
-```bash
-npm install -g pm2
-pm2 start dist/main.js --name "brittany-api"
-pm2 save
-pm2 startup
-```
-
-### Configuración de Nginx/Apache
-
-#### Para Nginx:
-
-```nginx
-location /api {
-    proxy_pass http://localhost:3001;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection 'upgrade';
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_cache_bypass $http_upgrade;
-}
-```
-
-#### Para Apache (.htaccess):
-
-```apache
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^api/(.*)$ http://localhost:3001/api/$1 [P,L]
-</IfModule>
-
-<IfModule mod_proxy.c>
-    ProxyPreserveHost On
-    ProxyPass /api http://localhost:3001/api
-    ProxyPassReverse /api http://localhost:3001/api
-</IfModule>
-```
-
-## 🛠️ Desarrollo Local
-
-### Requisitos
-
-- Node.js 20+
-- MySQL 8.0+
-- npm o yarn
-
-### Instalación
-
-```bash
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
 cp .env.example .env
-# Editar .env con tus credenciales
+```
+Asegúrate de configurar correctamente las credenciales de la base de datos y el `JWT_SECRET`.
 
-# Iniciar en modo desarrollo
+### 4. Instalación de Dependencias
+Instala los paquetes necesarios de Node.js:
+
+```bash
+npm install
+```
+
+### 5. Sembrar Datos Iniciales (Roles)
+Es fundamental crear los roles predeterminados para que el sistema de permisos funcione correctamente.
+
+```bash
+npm run seed:roles
+```
+Esto creará los roles: **Administrador**, **Docente**, **Desarrollador** y **Secretaria**.
+
+### 6. Ejecutar el Proyecto
+Finalmente, inicia el servidor en modo desarrollo con recarga automática:
+
+```bash
 npm run start:dev
 ```
 
-### Scripts Disponibles
+El servidor estará disponible en: `http://localhost:3002` (o el puerto configurado en el `.env`).
 
-```bash
-npm run start          # Iniciar en modo normal
-npm run start:dev      # Iniciar con hot-reload
-npm run start:prod     # Iniciar en modo producción
-npm run build          # Compilar TypeScript
-npm run test           # Ejecutar tests unitarios
-npm run test:e2e       # Ejecutar tests E2E
-npm run test:cov       # Tests con cobertura
-npm run lint           # Ejecutar linter
-npm run seed:roles     # Sembrar roles
-```
+---
 
-## 📚 Documentación API
+## 🔐 Seguridad y Permisos (RBAC)
 
-Una vez desplegado, la documentación Swagger estará disponible en:
+El sistema utiliza **Role-Based Access Control**. Los roles tienen los siguientes permisos generales:
 
-- **Desarrollo:** http://localhost:3001/api/docs
-- **Producción:** https://sga.brittanygroup.edu.pe/api/docs
+- **Administrador (1)**: Acceso total CRUD en todos los módulos.
+- **Docente (2)**: Gestión de Notas y Asistencia.
+- **Desarrollador (3)**: Acceso de solo lectura para auditoría.
+- **Secretaria (4)**: Gestión de Alumnos, Sedes, Planes, Matrículas y Pagos.
 
-## 🔧 Endpoints
+---
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| POST | `/api/leads` | Crear un nuevo lead |
-| GET | `/api/leads` | Obtener todos los leads |
-| GET | `/api/leads/:id` | Obtener un lead por ID |
-| PATCH | `/api/leads/:id` | Actualizar un lead |
-| DELETE | `/api/leads/:id` | Eliminar un lead |
+## 📚 Documentación de la API (Swagger)
 
-## 🗄️ Base de Datos
+La documentación interactiva está disponible una vez que el servidor está corriendo:
 
-- **Motor:** MySQL 8.0
-- **Host:** 75.102.22.134:3306
-- **Base de datos:** payxiohs_sga_brittany
+🔗 **URL:** `http://localhost:3002/api/docs`
 
-### Migración de Datos
+Aquí podrás probar todos los endpoints, ver los esquemas de los DTOs y verificar los requisitos de autenticación.
 
-En producción, `DB_SYNCHRONIZE` debe estar en `false`. Para aplicar cambios en el esquema:
+---
 
-```bash
-# Generar migración
-npm run migration:generate -- -n MigrationName
+## 🛠️ Scripts Disponibles
 
-# Ejecutar migraciones
-npm run migration:run
+- `npm run build`: Compila el proyecto para producción.
+- `npm run start:dev`: Inicia el servidor en modo desarrollo.
+- `npm run lint`: Ejecuta el linter de código.
+- `npm run test`: Ejecuta las pruebas unitarias.
+- `npm run seed:roles`: Puebla la base de datos con los roles iniciales.
 
-# Revertir migración
-npm run migration:revert
-```
-
-## 🔐 Seguridad
-
-### Variables de Entorno Sensibles
-
-Nunca subir al repositorio:
-- ✅ `.env` está en `.gitignore`
-- ✅ Usar `.env.example` como plantilla
-- ✅ Configurar secrets en GitHub Actions
-
-### CORS
-
-Configurado para aceptar requests desde:
-- `http://localhost:3000` (desarrollo)
-- `https://sga.brittanygroup.edu.pe` (producción)
-
-Actualizar en `src/main.ts` si es necesario.
-
-## 📊 Monitoreo
-
-### Logs
-
-```bash
-# Ver logs con PM2
-pm2 logs brittany-api
-
-# Ver logs en tiempo real
-pm2 logs brittany-api --lines 100
-```
-
-### Estado del Servidor
-
-```bash
-# Ver estado
-pm2 status
-
-# Reiniciar
-pm2 restart brittany-api
-
-# Detener
-pm2 stop brittany-api
-```
-
-## 🐛 Troubleshooting
-
-### El servidor no inicia
-
-1. Verificar que el puerto 3001 esté disponible:
-   ```bash
-   lsof -i :3001
-   ```
-
-2. Verificar variables de entorno:
-   ```bash
-   cat .env
-   ```
-
-3. Verificar logs:
-   ```bash
-   pm2 logs brittany-api --err
-   ```
-
-### Error de conexión a base de datos
-
-1. Verificar credenciales en `.env`
-2. Verificar que MySQL esté corriendo
-3. Verificar firewall y permisos de red
-
-### Tests fallan
-
-```bash
-# Limpiar y reinstalar
-rm -rf node_modules package-lock.json
-npm install
-
-# Ejecutar tests
-npm test
-```
-
-## 📞 Soporte
-
-Para problemas o preguntas, contactar al equipo de desarrollo.
+---
 
 ## 📄 Licencia
-
-Privado - Brittany Group © 2024
+Privado - Brittany Group © 2026
