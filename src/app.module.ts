@@ -8,6 +8,10 @@ import { AuthenticationModule } from './authentication/authentication.module';
 import { CampusesModule } from './campuses/campuses.module';
 import { PlansModule } from './plans/plans.module';
 import { StudentsModule } from './students/students.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { PaymentsModule } from './payments/payments.module';
+import { GradesModule } from './grades/grades.module';
+import { AttendanceModule } from './attendance/attendance.module';
 
 @Module({
   imports: [
@@ -21,6 +25,10 @@ import { StudentsModule } from './students/students.module';
     CampusesModule,
     PlansModule,
     StudentsModule,
+    EnrollmentsModule,
+    PaymentsModule,
+    GradesModule,
+    AttendanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

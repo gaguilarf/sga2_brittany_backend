@@ -1,0 +1,77 @@
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    UseGuards,
+    HttpCode,
+    HttpStatus,
+    ParseIntPipe,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
+import { EnrollmentsService } from '../../application/services/enrollments.service';
+import { CreateEnrollmentDto } from '../../domain/dtos/create-enrollment.dto';
+import { UpdateEnrollmentDto } from '../../domain/dtos/update-enrollment.dto';
+import { EnrollmentResponseDto } from '../../domain/dtos/enrollment-response.dto';
+import { JwtAuthGuard } from '../../../authentication/infrastructure/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../authentication/infrastructure/guards/roles.guard';
+import { Roles } from '../../../authentication/infrastructure/decorators/roles.decorator';
+
+@ApiTags('Enrollments')
+@Controller('enrollments')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth()
+@ApiCookieAuth()
+export class EnrollmentsController {
+    constructor(private readonly enrollmentsService: EnrollmentsService) { }
+
+    @Post()
+    @Roles(1, 4) // Administrador, Secretaria
+    @ApiOperation({ summary: 'Create a new enrollment' })
+    @ApiResponse({ status: 201, description: 'Enrollment created successfully', type: EnrollmentResponseDto })
+    async create(@Body() createEnrollmentDto: CreateEnrollmentDto): Promise<EnrollmentResponseDto> {
+        return this.enrollmentsService.create(createEnrollmentDto);
+    }
+
+    @Get()
+    @Roles(1, 2, 3, 4) // All roles
+    @ApiOperation({ summary: 'Get all enrollments' })
+    @ApiResponse({ status: 200, description: 'List of all enrollments', type: [EnrollmentResponseDto] })
+    async findAll(): Promise<EnrollmentResponseDto[]> {
+        return this.enrollmentsService.findAll();
+    }
+
+    @Get(':id')
+    @Roles(1, 2, 3, 4) // All roles
+    @ApiOperation({ summary: 'Get enrollment by ID' })
+    @ApiParam({ name: 'id', description: 'Enrollment ID', type: Number })
+    @ApiResponse({ status: 200, description: 'Enrollment found', type: EnrollmentResponseDto })
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<EnrollmentResponseDto> {
+        return this.enrollmentsService.findOne(id);
+    }
+
+    @Patch(':id')
+    @Roles(1, 4) // Administrador, Secretaria
+    @ApiOperation({ summary: 'Update enrollment by ID' })
+    @ApiParam({ name: 'id', description: 'Enrollment ID', type: Number })
+    @ApiResponse({ status: 200, description: 'Enrollment updated successfully', type: EnrollmentResponseDto })
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateEnrollmentDto: UpdateEnrollmentDto,
+    ): Promise<EnrollmentResponseDto> {
+        return this.enrollmentsService.update(id, updateEnrollmentDto);
+    }
+
+    @Delete(':id')
+    @Roles(1) // Only Administrador
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ summary: 'Delete enrollment by ID' })
+    @ApiParam({ name: 'id', description: 'Enrollment ID', type: Number })
+    @ApiResponse({ status: 204, description: 'Enrollment deleted successfully' })
+    async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        return this.enrollmentsService.remove(id);
+    }
+}
