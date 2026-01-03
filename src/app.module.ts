@@ -12,6 +12,7 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { PaymentsModule } from './payments/payments.module';
 import { GradesModule } from './grades/grades.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AttendanceModule } from './attendance/attendance.module';
     DatabaseModule,
     LeadsModule,
     AuthenticationModule,
+    RolesModule,
     CampusesModule,
     PlansModule,
     StudentsModule,
