@@ -13,6 +13,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { GradesModule } from './grades/grades.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { RolesModule } from './roles/roles.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RolesModule } from './roles/roles.module';
     LeadsModule,
     AuthenticationModule,
     RolesModule,
+    UsersModule,
     CampusesModule,
     PlansModule,
     StudentsModule,
