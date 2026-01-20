@@ -5,9 +5,9 @@ import { RolesService } from './application/services/roles.service';
 import { RolesController } from './presentation/controllers/roles.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([RolesTypeOrmEntity])],
-    controllers: [RolesController],
-    providers: [RolesService],
-    exports: [RolesService],
+  imports: [TypeOrmModule.forFeature([RolesTypeOrmEntity])],
+  controllers: [RolesController],
+  providers: [RolesService],
+  exports: [RolesService],
 })
-export class RolesModule { }
+export class RolesModule {}

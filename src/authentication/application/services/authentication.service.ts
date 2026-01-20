@@ -1,9 +1,9 @@
 import {
-    Injectable,
-    UnauthorizedException,
-    ConflictException,
-    Logger,
-    NotFoundException,
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,151 +17,160 @@ import { JwtPayload } from '../../domain/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthenticationService {
-    private readonly logger = new Logger(AuthenticationService.name);
+  private readonly logger = new Logger(AuthenticationService.name);
 
-    constructor(
-        @InjectRepository(UsersTypeOrmEntity)
-        private readonly usersRepository: Repository<UsersTypeOrmEntity>,
-        private readonly jwtService: JwtService,
-    ) { }
+  constructor(
+    @InjectRepository(UsersTypeOrmEntity)
+    private readonly usersRepository: Repository<UsersTypeOrmEntity>,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-        try {
-            this.logger.log(`Registering new user: ${registerDto.username}`);
+  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+    try {
+      this.logger.log(`Registering new user: ${registerDto.username}`);
 
-            // Check if username already exists
-            const existingUser = await this.usersRepository.findOne({
-                where: { username: registerDto.username },
-            });
+      // Check if username already exists
+      const existingUser = await this.usersRepository.findOne({
+        where: { username: registerDto.username },
+      });
 
-            if (existingUser) {
-                throw new ConflictException('Username already exists');
-            }
+      if (existingUser) {
+        throw new ConflictException('Username already exists');
+      }
 
-            // Check if email already exists
-            const existingEmail = await this.usersRepository.findOne({
-                where: { email: registerDto.email },
-            });
+      // Check if email already exists
+      const existingEmail = await this.usersRepository.findOne({
+        where: { email: registerDto.email },
+      });
 
-            if (existingEmail) {
-                throw new ConflictException('Email already exists');
-            }
+      if (existingEmail) {
+        throw new ConflictException('Email already exists');
+      }
 
-            // Hash password
-            const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-            // Create user
-            const user = this.usersRepository.create({
-                username: registerDto.username,
-                password: hashedPassword,
-                fullname: registerDto.fullname,
-                email: registerDto.email,
-                phone: registerDto.phone,
-                roleId: registerDto.roleId,
-                active: true,
-            });
+      // Create user
+      const user = this.usersRepository.create({
+        username: registerDto.username,
+        password: hashedPassword,
+        fullname: registerDto.fullname,
+        email: registerDto.email,
+        phone: registerDto.phone,
+        roleId: registerDto.roleId,
+        active: true,
+      });
 
-            const savedUser = await this.usersRepository.save(user);
+      const savedUser = await this.usersRepository.save(user);
 
-            this.logger.log(`User registered successfully: ${savedUser.username}`);
+      this.logger.log(`User registered successfully: ${savedUser.username}`);
 
-            return this.toAuthResponse(savedUser);
-        } catch (error) {
-            this.logger.error(`Error registering user: ${error.message}`, error.stack);
-            throw error;
-        }
+      return this.toAuthResponse(savedUser);
+    } catch (error) {
+      this.logger.error(
+        `Error registering user: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+    try {
+      this.logger.log(`Login attempt for user: ${loginDto.username}`);
+
+      const user = await this.validateUser(
+        loginDto.username,
+        loginDto.password,
+      );
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const payload: JwtPayload = {
+        sub: user.id,
+        username: user.username,
+        roleId: user.roleId,
+      };
+
+      const accessToken = this.jwtService.sign(payload);
+
+      this.logger.log(`User logged in successfully: ${user.username}`);
+
+      return {
+        ...this.toAuthResponse(user),
+        accessToken,
+      };
+    } catch (error) {
+      this.logger.error(`Error during login: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<UsersTypeOrmEntity | null> {
+    const user = await this.usersRepository.findOne({
+      where: { username, active: true },
+      relations: ['role'],
+    });
+
+    if (!user) {
+      return null;
     }
 
-    async login(loginDto: LoginDto): Promise<AuthResponseDto> {
-        try {
-            this.logger.log(`Login attempt for user: ${loginDto.username}`);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-            const user = await this.validateUser(loginDto.username, loginDto.password);
-
-            if (!user) {
-                throw new UnauthorizedException('Invalid credentials');
-            }
-
-            const payload: JwtPayload = {
-                sub: user.id,
-                username: user.username,
-                roleId: user.roleId,
-            };
-
-            const accessToken = this.jwtService.sign(payload);
-
-            this.logger.log(`User logged in successfully: ${user.username}`);
-
-            return {
-                ...this.toAuthResponse(user),
-                accessToken,
-            };
-        } catch (error) {
-            this.logger.error(`Error during login: ${error.message}`, error.stack);
-            throw error;
-        }
+    if (!isPasswordValid) {
+      return null;
     }
 
-    async validateUser(username: string, password: string): Promise<UsersTypeOrmEntity | null> {
-        const user = await this.usersRepository.findOne({
-            where: { username, active: true },
-            relations: ['role'],
-        });
+    return user;
+  }
 
-        if (!user) {
-            return null;
-        }
+  async getCurrentUser(userId: number): Promise<AuthResponseDto> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId, active: true },
+      relations: ['role'],
+    });
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return null;
-        }
-
-        return user;
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    async getCurrentUser(userId: number): Promise<AuthResponseDto> {
-        const user = await this.usersRepository.findOne({
-            where: { id: userId, active: true },
-            relations: ['role'],
-        });
+    return this.toAuthResponse(user);
+  }
 
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
+  async refreshToken(userId: number): Promise<{ accessToken: string }> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId, active: true },
+    });
 
-        return this.toAuthResponse(user);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
     }
 
-    async refreshToken(userId: number): Promise<{ accessToken: string }> {
-        const user = await this.usersRepository.findOne({
-            where: { id: userId, active: true },
-        });
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      roleId: user.roleId,
+    };
 
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
+    const accessToken = this.jwtService.sign(payload);
 
-        const payload: JwtPayload = {
-            sub: user.id,
-            username: user.username,
-            roleId: user.roleId,
-        };
+    return { accessToken };
+  }
 
-        const accessToken = this.jwtService.sign(payload);
-
-        return { accessToken };
-    }
-
-    private toAuthResponse(user: UsersTypeOrmEntity): AuthResponseDto {
-        return {
-            id: user.id,
-            username: user.username,
-            fullname: user.fullname,
-            email: user.email,
-            roleId: user.roleId,
-            roleName: user.role?.name,
-        };
-    }
+  private toAuthResponse(user: UsersTypeOrmEntity): AuthResponseDto {
+    return {
+      id: user.id,
+      username: user.username,
+      fullname: user.fullname,
+      email: user.email,
+      roleId: user.roleId,
+      roleName: user.role?.name,
+    };
+  }
 }

@@ -6,38 +6,38 @@ import { UserResponseDto } from '../../domain/dtos/user-response.dto';
 
 @Injectable()
 export class UsersService {
-    private readonly logger = new Logger(UsersService.name);
+  private readonly logger = new Logger(UsersService.name);
 
-    constructor(
-        @InjectRepository(UsersTypeOrmEntity)
-        private readonly usersRepository: Repository<UsersTypeOrmEntity>,
-    ) { }
+  constructor(
+    @InjectRepository(UsersTypeOrmEntity)
+    private readonly usersRepository: Repository<UsersTypeOrmEntity>,
+  ) {}
 
-    async findAll(): Promise<UserResponseDto[]> {
-        try {
-            this.logger.log('Fetching all users');
-            const users = await this.usersRepository.find({
-                relations: ['role'],
-                order: { createdAt: 'DESC' },
-            });
-            return users.map(u => this.toResponseDto(u));
-        } catch (error) {
-            this.logger.error(`Error fetching users: ${error.message}`, error.stack);
-            throw error;
-        }
+  async findAll(): Promise<UserResponseDto[]> {
+    try {
+      this.logger.log('Fetching all users');
+      const users = await this.usersRepository.find({
+        relations: ['role'],
+        order: { createdAt: 'DESC' },
+      });
+      return users.map((u) => this.toResponseDto(u));
+    } catch (error) {
+      this.logger.error(`Error fetching users: ${error.message}`, error.stack);
+      throw error;
     }
+  }
 
-    private toResponseDto(entity: UsersTypeOrmEntity): UserResponseDto {
-        return {
-            id: entity.id,
-            username: entity.username,
-            roleId: entity.roleId,
-            fullname: entity.fullname,
-            email: entity.email,
-            phone: entity.phone,
-            active: entity.active,
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt,
-        };
-    }
+  private toResponseDto(entity: UsersTypeOrmEntity): UserResponseDto {
+    return {
+      id: entity.id,
+      username: entity.username,
+      roleId: entity.roleId,
+      fullname: entity.fullname,
+      email: entity.email,
+      phone: entity.phone,
+      active: entity.active,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
 }

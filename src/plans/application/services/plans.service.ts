@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlansTypeOrmEntity } from '../../infrastructure/persistence/typeorm/plans.typeorm-entity';
@@ -8,152 +13,175 @@ import { PlanResponseDto } from '../../domain/dtos/plan-response.dto';
 
 @Injectable()
 export class PlansService {
-    private readonly logger = new Logger(PlansService.name);
+  private readonly logger = new Logger(PlansService.name);
 
-    constructor(
-        @InjectRepository(PlansTypeOrmEntity)
-        private readonly plansRepository: Repository<PlansTypeOrmEntity>,
-    ) { }
+  constructor(
+    @InjectRepository(PlansTypeOrmEntity)
+    private readonly plansRepository: Repository<PlansTypeOrmEntity>,
+  ) {}
 
-    async create(createPlanDto: CreatePlanDto): Promise<PlanResponseDto> {
-        try {
-            this.logger.log(`Creating new plan: ${createPlanDto.name}`);
+  async create(createPlanDto: CreatePlanDto): Promise<PlanResponseDto> {
+    try {
+      this.logger.log(`Creating new plan: ${createPlanDto.name}`);
 
-            // Check if plan with same name already exists
-            const existingPlan = await this.plansRepository.findOne({
-                where: { name: createPlanDto.name },
-            });
+      // Check if plan with same name already exists
+      const existingPlan = await this.plansRepository.findOne({
+        where: { name: createPlanDto.name },
+      });
 
-            if (existingPlan) {
-                throw new ConflictException(`Plan with name "${createPlanDto.name}" already exists`);
-            }
+      if (existingPlan) {
+        throw new ConflictException(
+          `Plan with name "${createPlanDto.name}" already exists`,
+        );
+      }
 
-            const plan = this.plansRepository.create(createPlanDto);
-            const savedPlan = await this.plansRepository.save(plan);
+      const plan = this.plansRepository.create(createPlanDto);
+      const savedPlan = await this.plansRepository.save(plan);
 
-            this.logger.log(`Plan created successfully: ${savedPlan.name} (ID: ${savedPlan.id})`);
+      this.logger.log(
+        `Plan created successfully: ${savedPlan.name} (ID: ${savedPlan.id})`,
+      );
 
-            return this.toResponseDto(savedPlan);
-        } catch (error) {
-            this.logger.error(`Error creating plan: ${error.message}`, error.stack);
-            throw error;
+      return this.toResponseDto(savedPlan);
+    } catch (error) {
+      this.logger.error(`Error creating plan: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async findAll(): Promise<PlanResponseDto[]> {
+    try {
+      this.logger.log('Fetching all plans');
+      const plans = await this.plansRepository.find({
+        order: { createdAt: 'DESC' },
+      });
+
+      this.logger.log(`Found ${plans.length} plans`);
+      return plans.map((plan) => this.toResponseDto(plan));
+    } catch (error) {
+      this.logger.error(`Error fetching plans: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  async findActive(): Promise<PlanResponseDto[]> {
+    try {
+      this.logger.log('Fetching active plans');
+      const plans = await this.plansRepository.find({
+        where: { active: true },
+        order: { name: 'ASC' },
+      });
+
+      this.logger.log(`Found ${plans.length} active plans`);
+      return plans.map((plan) => this.toResponseDto(plan));
+    } catch (error) {
+      this.logger.error(
+        `Error fetching active plans: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async findOne(id: number): Promise<PlanResponseDto> {
+    try {
+      this.logger.log(`Fetching plan with ID: ${id}`);
+      const plan = await this.plansRepository.findOne({
+        where: { id },
+      });
+
+      if (!plan) {
+        throw new NotFoundException(`Plan with ID ${id} not found`);
+      }
+
+      return this.toResponseDto(plan);
+    } catch (error) {
+      this.logger.error(
+        `Error fetching plan ${id}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async update(
+    id: number,
+    updatePlanDto: UpdatePlanDto,
+  ): Promise<PlanResponseDto> {
+    try {
+      this.logger.log(`Updating plan with ID: ${id}`);
+
+      const plan = await this.plansRepository.findOne({
+        where: { id },
+      });
+
+      if (!plan) {
+        throw new NotFoundException(`Plan with ID ${id} not found`);
+      }
+
+      // Check if new name conflicts with existing plan
+      if (updatePlanDto.name && updatePlanDto.name !== plan.name) {
+        const existingPlan = await this.plansRepository.findOne({
+          where: { name: updatePlanDto.name },
+        });
+
+        if (existingPlan) {
+          throw new ConflictException(
+            `Plan with name "${updatePlanDto.name}" already exists`,
+          );
         }
+      }
+
+      Object.assign(plan, updatePlanDto);
+      const updatedPlan = await this.plansRepository.save(plan);
+
+      this.logger.log(
+        `Plan updated successfully: ${updatedPlan.name} (ID: ${updatedPlan.id})`,
+      );
+
+      return this.toResponseDto(updatedPlan);
+    } catch (error) {
+      this.logger.error(
+        `Error updating plan ${id}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
     }
+  }
 
-    async findAll(): Promise<PlanResponseDto[]> {
-        try {
-            this.logger.log('Fetching all plans');
-            const plans = await this.plansRepository.find({
-                order: { createdAt: 'DESC' },
-            });
+  async remove(id: number): Promise<void> {
+    try {
+      this.logger.log(`Removing plan with ID: ${id}`);
 
-            this.logger.log(`Found ${plans.length} plans`);
-            return plans.map(plan => this.toResponseDto(plan));
-        } catch (error) {
-            this.logger.error(`Error fetching plans: ${error.message}`, error.stack);
-            throw error;
-        }
+      const plan = await this.plansRepository.findOne({
+        where: { id },
+      });
+
+      if (!plan) {
+        throw new NotFoundException(`Plan with ID ${id} not found`);
+      }
+
+      await this.plansRepository.remove(plan);
+
+      this.logger.log(`Plan removed successfully: ${plan.name} (ID: ${id})`);
+    } catch (error) {
+      this.logger.error(
+        `Error removing plan ${id}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
     }
+  }
 
-    async findActive(): Promise<PlanResponseDto[]> {
-        try {
-            this.logger.log('Fetching active plans');
-            const plans = await this.plansRepository.find({
-                where: { active: true },
-                order: { name: 'ASC' },
-            });
-
-            this.logger.log(`Found ${plans.length} active plans`);
-            return plans.map(plan => this.toResponseDto(plan));
-        } catch (error) {
-            this.logger.error(`Error fetching active plans: ${error.message}`, error.stack);
-            throw error;
-        }
-    }
-
-    async findOne(id: number): Promise<PlanResponseDto> {
-        try {
-            this.logger.log(`Fetching plan with ID: ${id}`);
-            const plan = await this.plansRepository.findOne({
-                where: { id },
-            });
-
-            if (!plan) {
-                throw new NotFoundException(`Plan with ID ${id} not found`);
-            }
-
-            return this.toResponseDto(plan);
-        } catch (error) {
-            this.logger.error(`Error fetching plan ${id}: ${error.message}`, error.stack);
-            throw error;
-        }
-    }
-
-    async update(id: number, updatePlanDto: UpdatePlanDto): Promise<PlanResponseDto> {
-        try {
-            this.logger.log(`Updating plan with ID: ${id}`);
-
-            const plan = await this.plansRepository.findOne({
-                where: { id },
-            });
-
-            if (!plan) {
-                throw new NotFoundException(`Plan with ID ${id} not found`);
-            }
-
-            // Check if new name conflicts with existing plan
-            if (updatePlanDto.name && updatePlanDto.name !== plan.name) {
-                const existingPlan = await this.plansRepository.findOne({
-                    where: { name: updatePlanDto.name },
-                });
-
-                if (existingPlan) {
-                    throw new ConflictException(`Plan with name "${updatePlanDto.name}" already exists`);
-                }
-            }
-
-            Object.assign(plan, updatePlanDto);
-            const updatedPlan = await this.plansRepository.save(plan);
-
-            this.logger.log(`Plan updated successfully: ${updatedPlan.name} (ID: ${updatedPlan.id})`);
-
-            return this.toResponseDto(updatedPlan);
-        } catch (error) {
-            this.logger.error(`Error updating plan ${id}: ${error.message}`, error.stack);
-            throw error;
-        }
-    }
-
-    async remove(id: number): Promise<void> {
-        try {
-            this.logger.log(`Removing plan with ID: ${id}`);
-
-            const plan = await this.plansRepository.findOne({
-                where: { id },
-            });
-
-            if (!plan) {
-                throw new NotFoundException(`Plan with ID ${id} not found`);
-            }
-
-            await this.plansRepository.remove(plan);
-
-            this.logger.log(`Plan removed successfully: ${plan.name} (ID: ${id})`);
-        } catch (error) {
-            this.logger.error(`Error removing plan ${id}: ${error.message}`, error.stack);
-            throw error;
-        }
-    }
-
-    private toResponseDto(plan: PlansTypeOrmEntity): PlanResponseDto {
-        return {
-            id: plan.id,
-            name: plan.name,
-            type: plan.type,
-            description: plan.description,
-            active: plan.active,
-            createdAt: plan.createdAt,
-            updatedAt: plan.updatedAt,
-        };
-    }
+  private toResponseDto(plan: PlansTypeOrmEntity): PlanResponseDto {
+    return {
+      id: plan.id,
+      name: plan.name,
+      type: plan.type,
+      description: plan.description,
+      active: plan.active,
+      createdAt: plan.createdAt,
+      updatedAt: plan.updatedAt,
+    };
+  }
 }

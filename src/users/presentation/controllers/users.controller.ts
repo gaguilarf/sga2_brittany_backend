@@ -1,9 +1,11 @@
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import {
-    Controller,
-    Get,
-    UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth } from '@nestjs/swagger';
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 import { UsersService } from '../../application/services/users.service';
 import { UserResponseDto } from '../../domain/dtos/user-response.dto';
 import { JwtAuthGuard } from '../../../authentication/infrastructure/guards/jwt-auth.guard';
@@ -16,13 +18,17 @@ import { Roles } from '../../../authentication/infrastructure/decorators/roles.d
 @ApiBearerAuth()
 @ApiCookieAuth()
 export class UsersController {
-    constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
-    @Get()
-    @Roles(1) // Only Administrador
-    @ApiOperation({ summary: 'Get all registered users (Admin only)' })
-    @ApiResponse({ status: 200, description: 'List of all users', type: [UserResponseDto] })
-    async findAll(): Promise<UserResponseDto[]> {
-        return this.usersService.findAll();
-    }
+  @Get()
+  @Roles(1) // Only Administrador
+  @ApiOperation({ summary: 'Get all registered users (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all users',
+    type: [UserResponseDto],
+  })
+  async findAll(): Promise<UserResponseDto[]> {
+    return this.usersService.findAll();
+  }
 }

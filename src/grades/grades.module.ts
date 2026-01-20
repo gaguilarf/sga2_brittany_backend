@@ -6,9 +6,11 @@ import { GradesService } from './application/services/grades.service';
 import { GradesController } from './presentation/controllers/grades.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([GradesTypeOrmEntity, GradeDetailsTypeOrmEntity])],
-    controllers: [GradesController],
-    providers: [GradesService],
-    exports: [GradesService],
+  imports: [
+    TypeOrmModule.forFeature([GradesTypeOrmEntity, GradeDetailsTypeOrmEntity]),
+  ],
+  controllers: [GradesController],
+  providers: [GradesService],
+  exports: [GradesService],
 })
-export class GradesModule { }
+export class GradesModule {}

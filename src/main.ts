@@ -43,7 +43,7 @@ async function bootstrap() {
     .setTitle('Brittany Group - Sistema de Gestión Académica')
     .setDescription(
       'API REST para el Sistema de Gestión Académica (SGA) de Brittany Group. ' +
-      'Incluye gestión de leads, autenticación, usuarios, alumnos, matrículas, pagos, y más.',
+        'Incluye gestión de leads, autenticación, usuarios, alumnos, matrículas, pagos, y más.',
     )
     .setVersion('2.0')
     .addTag('Authentication', 'Endpoints de autenticación y autorización')
@@ -65,4 +65,3 @@ async function bootstrap() {
   console.log(`📚 Documentación Swagger: http://localhost:${port}/api/docs\n`);
 }
 bootstrap();
-

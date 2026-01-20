@@ -7,34 +7,34 @@ import { JwtPayload } from '../../domain/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private configService: ConfigService) {
-        const secret = configService.get<string>('JWT_SECRET');
-        if (!secret) {
-            throw new Error('JWT_SECRET is not defined in environment variables');
-        }
-
-        super({
-            jwtFromRequest: ExtractJwt.fromExtractors([
-                (request: Request) => {
-                    // Extract JWT from cookie
-                    return request?.cookies?.['access_token'];
-                },
-                ExtractJwt.fromAuthHeaderAsBearerToken(), // Fallback to Authorization header
-            ]),
-            ignoreExpiration: false,
-            secretOrKey: secret,
-        });
+  constructor(private configService: ConfigService) {
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
     }
 
-    async validate(payload: JwtPayload) {
-        if (!payload) {
-            throw new UnauthorizedException();
-        }
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+          // Extract JWT from cookie
+          return request?.cookies?.['access_token'];
+        },
+        ExtractJwt.fromAuthHeaderAsBearerToken(), // Fallback to Authorization header
+      ]),
+      ignoreExpiration: false,
+      secretOrKey: secret,
+    });
+  }
 
-        return {
-            userId: payload.sub,
-            username: payload.username,
-            roleId: payload.roleId,
-        };
+  async validate(payload: JwtPayload) {
+    if (!payload) {
+      throw new UnauthorizedException();
     }
+
+    return {
+      userId: payload.sub,
+      username: payload.username,
+      roleId: payload.roleId,
+    };
+  }
 }

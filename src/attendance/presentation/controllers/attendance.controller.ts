@@ -1,17 +1,24 @@
 import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    Delete,
-    UseGuards,
-    HttpCode,
-    HttpStatus,
-    ParseIntPipe,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiCookieAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { AttendanceService } from '../../application/services/attendance.service';
 import { CreateAttendanceDto } from '../../domain/dtos/create-attendance.dto';
 import { UpdateAttendanceDto } from '../../domain/dtos/update-attendance.dto';
@@ -26,48 +33,52 @@ import { Roles } from '../../../authentication/infrastructure/decorators/roles.d
 @ApiBearerAuth()
 @ApiCookieAuth()
 export class AttendanceController {
-    constructor(private readonly attendanceService: AttendanceService) { }
+  constructor(private readonly attendanceService: AttendanceService) {}
 
-    @Post()
-    @Roles(1, 2, 4) // Admin, Teacher, Secretary
-    @ApiOperation({ summary: 'Record student attendance' })
-    @ApiResponse({ status: 201, type: AttendanceResponseDto })
-    async create(@Body() createAttendanceDto: CreateAttendanceDto): Promise<AttendanceResponseDto> {
-        return this.attendanceService.create(createAttendanceDto);
-    }
+  @Post()
+  @Roles(1, 2, 4) // Admin, Teacher, Secretary
+  @ApiOperation({ summary: 'Record student attendance' })
+  @ApiResponse({ status: 201, type: AttendanceResponseDto })
+  async create(
+    @Body() createAttendanceDto: CreateAttendanceDto,
+  ): Promise<AttendanceResponseDto> {
+    return this.attendanceService.create(createAttendanceDto);
+  }
 
-    @Get()
-    @Roles(1, 2, 3, 4)
-    @ApiOperation({ summary: 'Get all attendance records' })
-    @ApiResponse({ status: 200, type: [AttendanceResponseDto] })
-    async findAll(): Promise<AttendanceResponseDto[]> {
-        return this.attendanceService.findAll();
-    }
+  @Get()
+  @Roles(1, 2, 3, 4)
+  @ApiOperation({ summary: 'Get all attendance records' })
+  @ApiResponse({ status: 200, type: [AttendanceResponseDto] })
+  async findAll(): Promise<AttendanceResponseDto[]> {
+    return this.attendanceService.findAll();
+  }
 
-    @Get(':id')
-    @Roles(1, 2, 3, 4)
-    @ApiParam({ name: 'id', type: Number })
-    @ApiResponse({ status: 200, type: AttendanceResponseDto })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<AttendanceResponseDto> {
-        return this.attendanceService.findOne(id);
-    }
+  @Get(':id')
+  @Roles(1, 2, 3, 4)
+  @ApiParam({ name: 'id', type: Number })
+  @ApiResponse({ status: 200, type: AttendanceResponseDto })
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<AttendanceResponseDto> {
+    return this.attendanceService.findOne(id);
+  }
 
-    @Patch(':id')
-    @Roles(1, 2, 4)
-    @ApiParam({ name: 'id', type: Number })
-    @ApiResponse({ status: 200, type: AttendanceResponseDto })
-    async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() updateAttendanceDto: UpdateAttendanceDto,
-    ): Promise<AttendanceResponseDto> {
-        return this.attendanceService.update(id, updateAttendanceDto);
-    }
+  @Patch(':id')
+  @Roles(1, 2, 4)
+  @ApiParam({ name: 'id', type: Number })
+  @ApiResponse({ status: 200, type: AttendanceResponseDto })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAttendanceDto: UpdateAttendanceDto,
+  ): Promise<AttendanceResponseDto> {
+    return this.attendanceService.update(id, updateAttendanceDto);
+  }
 
-    @Delete(':id')
-    @Roles(1)
-    @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiParam({ name: 'id', type: Number })
-    async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        return this.attendanceService.remove(id);
-    }
+  @Delete(':id')
+  @Roles(1)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', type: Number })
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.attendanceService.remove(id);
+  }
 }

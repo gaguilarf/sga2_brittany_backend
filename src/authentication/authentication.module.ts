@@ -11,28 +11,28 @@ import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from './infrastructure/guards/roles.guard';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([UsersTypeOrmEntity]),
-        PassportModule.register({ defaultStrategy: 'jwt' }),
-        JwtModule.registerAsync({
-            imports: [ConfigModule],
-            useFactory: async (configService: ConfigService) => {
-                const secret = configService.get<string>('JWT_SECRET');
-                if (!secret) {
-                    throw new Error('JWT_SECRET is not defined in environment variables');
-                }
-                return {
-                    secret,
-                    signOptions: {
-                        expiresIn: configService.get('JWT_EXPIRES_IN', '7d'),
-                    },
-                };
-            },
-            inject: [ConfigService],
-        }),
-    ],
-    controllers: [AuthenticationController],
-    providers: [AuthenticationService, JwtStrategy, JwtAuthGuard, RolesGuard],
-    exports: [AuthenticationService, JwtAuthGuard, RolesGuard],
+  imports: [
+    TypeOrmModule.forFeature([UsersTypeOrmEntity]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('JWT_SECRET is not defined in environment variables');
+        }
+        return {
+          secret,
+          signOptions: {
+            expiresIn: configService.get('JWT_EXPIRES_IN', '7d'),
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
+  ],
+  controllers: [AuthenticationController],
+  providers: [AuthenticationService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  exports: [AuthenticationService, JwtAuthGuard, RolesGuard],
 })
-export class AuthenticationModule { }
+export class AuthenticationModule {}

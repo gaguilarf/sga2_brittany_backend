@@ -7,15 +7,15 @@ import { LeadTypeOrmRepository } from './infrastructure/persistence/typeorm/repo
 import { LEAD_REPOSITORY } from './domain/repositories/lead.repository.interface';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([LeadEntity])],
-    controllers: [LeadsController],
-    providers: [
-        LeadsService,
-        {
-            provide: LEAD_REPOSITORY,
-            useClass: LeadTypeOrmRepository,
-        },
-    ],
-    exports: [LeadsService],
+  imports: [TypeOrmModule.forFeature([LeadEntity])],
+  controllers: [LeadsController],
+  providers: [
+    LeadsService,
+    {
+      provide: LEAD_REPOSITORY,
+      useClass: LeadTypeOrmRepository,
+    },
+  ],
+  exports: [LeadsService],
 })
-export class LeadsModule { }
+export class LeadsModule {}
