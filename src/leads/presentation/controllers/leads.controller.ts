@@ -8,7 +8,10 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Req,
+  Logger,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,10 +23,13 @@ import { LeadsService } from '../../application/services/leads.service';
 import { CreateLeadDto } from '../../domain/dtos/create-lead.dto';
 import { UpdateLeadDto } from '../../domain/dtos/update-lead.dto';
 import { LeadResponseDto } from '../../domain/dtos/lead-response.dto';
+import { UseGuards } from '@nestjs/common';
+import { OptionalJwtAuthGuard } from '../../../authentication/infrastructure/guards/optional-jwt-auth.guard';
 
 @ApiTags('Leads')
 @Controller('leads')
 export class LeadsController {
+  private readonly logger = new Logger(LeadsController.name);
   constructor(private readonly leadsService: LeadsService) {}
 
   @Post()
@@ -42,8 +48,38 @@ export class LeadsController {
     status: 400,
     description: 'Datos inválidos o error en la validación',
   })
-  async create(@Body() createLeadDto: CreateLeadDto): Promise<LeadResponseDto> {
+  @UseGuards(OptionalJwtAuthGuard)
+  async create(
+    @Body() createLeadDto: CreateLeadDto,
+    @Req() req: Request,
+  ): Promise<LeadResponseDto> {
+    const user = (req as any).user;
+
+    if (user) {
+      this.logger.log(
+        `User detected in request: ${user.username} (${user.fullname || 'no fullname'})`,
+      );
+      createLeadDto.asesor = user.fullname || user.username || 'no asesor';
+    } else {
+      this.logger.log(
+        'No user detected in request, setting asesor to "no asesor"',
+      );
+      createLeadDto.asesor = 'no asesor';
+    }
+
     return this.leadsService.create(createLeadDto);
+  }
+
+  @Delete('cleanup/test-data')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Limpiar leads de prueba',
+    description:
+      'Elimina todos los leads registrados (uso interno para pruebas)',
+  })
+  async cleanup(): Promise<{ message: string }> {
+    await this.leadsService.removeAll();
+    return { message: 'Leads de prueba eliminados exitosamente' };
   }
 
   @Get()

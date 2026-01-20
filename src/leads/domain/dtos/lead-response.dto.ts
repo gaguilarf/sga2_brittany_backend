@@ -58,6 +58,12 @@ export class LeadResponseDto {
   aceptaContacto: boolean;
 
   @ApiProperty({
+    description: 'Nombre del asesor que registró el lead',
+    example: 'no asesor',
+  })
+  asesor: string;
+
+  @ApiProperty({
     description: 'Fecha de registro del lead',
     example: '2024-01-15T10:30:00.000Z',
   })

@@ -110,4 +110,13 @@ export class CreateLeadDto {
   @IsNotEmpty({ message: 'Debe indicar si acepta ser contactado' })
   @IsBoolean({ message: 'El campo aceptaContacto debe ser verdadero o falso' })
   aceptaContacto: boolean;
+
+  @ApiProperty({
+    description: 'Nombre del asesor asignado',
+    example: 'no asesor',
+    required: false,
+  })
+  @IsString({ message: 'El asesor debe ser un texto' })
+  @IsNotEmpty({ message: 'El campo asesor no puede estar vacío' })
+  asesor: string = 'no asesor';
 }

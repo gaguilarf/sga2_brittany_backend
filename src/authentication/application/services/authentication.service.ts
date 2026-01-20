@@ -91,6 +91,7 @@ export class AuthenticationService {
       const payload: JwtPayload = {
         sub: user.id,
         username: user.username,
+        fullname: user.fullname,
         roleId: user.roleId,
       };
 
@@ -155,6 +156,7 @@ export class AuthenticationService {
     const payload: JwtPayload = {
       sub: user.id,
       username: user.username,
+      fullname: user.fullname,
       roleId: user.roleId,
     };
 

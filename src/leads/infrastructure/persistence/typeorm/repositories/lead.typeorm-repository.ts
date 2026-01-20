@@ -57,6 +57,7 @@ export class LeadTypeOrmRepository implements ILeadRepository {
       medioContacto: entity.medioContacto as any,
       producto: entity.producto,
       aceptaContacto: entity.aceptaContacto,
+      asesor: entity.asesor,
       fechaRegistro: entity.fechaRegistro,
     });
   }

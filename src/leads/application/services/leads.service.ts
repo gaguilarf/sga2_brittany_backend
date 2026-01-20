@@ -127,6 +127,23 @@ export class LeadsService {
     }
   }
 
+  async removeAll(): Promise<void> {
+    try {
+      this.logger.log('Cleaning up all leads (test cleanup)');
+      const leads = await this.leadRepository.findAll();
+      for (const lead of leads) {
+        await this.leadRepository.delete(lead.id!);
+      }
+      this.logger.log('All leads removed successfully');
+    } catch (error) {
+      this.logger.error(
+        `Error cleaning up leads: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('Error al limpiar los leads');
+    }
+  }
+
   private toResponseDto(lead: Lead): LeadResponseDto {
     return {
       id: lead.id!,
@@ -138,6 +155,7 @@ export class LeadsService {
       medioContacto: lead.medioContacto,
       producto: lead.producto,
       aceptaContacto: lead.aceptaContacto,
+      asesor: lead.asesor,
       fechaRegistro: lead.fechaRegistro!,
     };
   }

@@ -34,6 +34,9 @@ export class LeadEntity {
   @Column({ type: 'boolean', default: true })
   aceptaContacto: boolean;
 
+  @Column({ type: 'varchar', length: 100, default: 'no asesor' })
+  asesor: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   fechaRegistro: Date;
 }
