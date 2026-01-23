@@ -8,6 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import { ProductsTypeOrmEntity } from '../../../../products/infrastructure/persistence/typeorm/products.typeorm-entity';
 import { StudentsTypeOrmEntity } from '../../../../students/infrastructure/persistence/typeorm/students.typeorm-entity';
 import { CampusesTypeOrmEntity } from '../../../../campuses/infrastructure/persistence/typeorm/campuses.typeorm-entity';
 import { PlansTypeOrmEntity } from '../../../../plans/infrastructure/persistence/typeorm/plans.typeorm-entity';
@@ -44,6 +45,20 @@ export class EnrollmentsTypeOrmEntity {
 
   @Column({ name: 'ciclo_inicial_id', type: 'int', nullable: true })
   initialCycleId: number;
+
+  @Column({
+    name: 'enrollment_type',
+    type: 'enum',
+    enum: ['PLAN', 'PRODUCT'],
+    default: 'PLAN',
+  })
+  enrollmentType: string;
+
+  @Column({ name: 'product_id', type: 'int', nullable: true })
+  productId: number;
+
+  @Column({ name: 'exam_date', type: 'date', nullable: true })
+  examDate: Date;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   modalidad: string;
@@ -120,6 +135,10 @@ export class EnrollmentsTypeOrmEntity {
   @ManyToOne(() => CyclesTypeOrmEntity, (cycle) => cycle.enrollments)
   @JoinColumn({ name: 'ciclo_inicial_id' })
   initialCycle: CyclesTypeOrmEntity;
+
+  @ManyToOne(() => ProductsTypeOrmEntity, (product) => product.enrollments)
+  @JoinColumn({ name: 'product_id' })
+  product: ProductsTypeOrmEntity;
 
   @OneToMany(() => PaymentsTypeOrmEntity, (payment) => payment.enrollment)
   payments: PaymentsTypeOrmEntity[];

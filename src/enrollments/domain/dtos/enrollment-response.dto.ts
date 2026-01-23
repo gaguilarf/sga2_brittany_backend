@@ -33,6 +33,23 @@ export class EnrollmentResponseDto {
   initialCycleId?: number;
 
   @ApiProperty({
+    description: 'Enrollment Type',
+    example: 'PLAN',
+    enum: ['PLAN', 'PRODUCT'],
+  })
+  enrollmentType: string;
+
+  @ApiProperty({ description: 'Product ID', example: 1, required: false })
+  productId?: number;
+
+  @ApiProperty({
+    description: 'Exam Date',
+    example: '2026-02-15',
+    required: false,
+  })
+  examDate?: Date;
+
+  @ApiProperty({
     description: 'Enrollment type',
     example: 'Nueva',
     required: false,

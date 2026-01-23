@@ -16,6 +16,7 @@ import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
 import { LevelsModule } from './levels/levels.module';
 import { GroupsModule } from './groups/groups.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { GroupsModule } from './groups/groups.module';
     AttendanceModule,
     LevelsModule,
     GroupsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

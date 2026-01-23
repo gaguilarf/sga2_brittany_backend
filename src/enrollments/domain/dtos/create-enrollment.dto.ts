@@ -6,6 +6,8 @@ import {
   IsString,
   MaxLength,
   IsNumber,
+  IsEnum,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateEnrollmentDto {
@@ -97,4 +99,32 @@ export class CreateEnrollmentDto {
   @IsNumber()
   @IsOptional()
   saldo?: number;
+
+  @ApiProperty({
+    example: 'PLAN',
+    enum: ['PLAN', 'PRODUCT'],
+    description: 'Tipo de matrícula',
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(['PLAN', 'PRODUCT'])
+  enrollmentType?: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'ID del producto (solo para enrollmentType=PRODUCT)',
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  productId?: number;
+
+  @ApiProperty({
+    example: '2026-02-15',
+    description: 'Fecha de examen (solo para productos que lo requieran)',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  examDate?: string;
 }
