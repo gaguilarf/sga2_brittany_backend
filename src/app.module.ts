@@ -14,6 +14,8 @@ import { GradesModule } from './grades/grades.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
+import { LevelsModule } from './levels/levels.module';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { UsersModule } from './users/users.module';
     PaymentsModule,
     GradesModule,
     AttendanceModule,
+    LevelsModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

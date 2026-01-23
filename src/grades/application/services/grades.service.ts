@@ -133,11 +133,8 @@ export class GradesService {
       });
 
       if (grade) {
-        const totalScore = grade.details.reduce(
-          (acc, curr) => acc + Number(curr.puntaje),
-          0,
-        );
-        grade.notaFinal = totalScore / grade.details.length;
+        // Calculation logic would go here based on the 10 fields
+        // For now, we just saved the detail
         await this.gradesRepository.save(grade);
       }
 
@@ -155,7 +152,8 @@ export class GradesService {
     return {
       id: entity.id,
       studentId: entity.studentId,
-      ciclo: entity.ciclo,
+      groupId: entity.groupId,
+      cycleId: entity.cycleId,
       mes: entity.mes,
       año: entity.año,
       notaFinal: entity.notaFinal ? Number(entity.notaFinal) : undefined,
@@ -163,6 +161,8 @@ export class GradesService {
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       details: entity.details?.map((d) => this.toDetailResponseDto(d)),
+      teacherId: entity.teacherId,
+      observaciones: entity.observaciones,
     };
   }
 
@@ -172,8 +172,16 @@ export class GradesService {
     return {
       id: entity.id,
       gradeId: entity.gradeId,
-      apartado: entity.apartado,
-      puntaje: entity.puntaje ? Number(entity.puntaje) : undefined,
+      homework: entity.homework,
+      oralProduction: entity.oralProduction,
+      writtenProject: entity.writtenProject,
+      midtermExam: entity.midtermExam,
+      firstOral: entity.firstOral,
+      finalWritten: entity.finalWritten,
+      finalOral: entity.finalOral,
+      participation: entity.participation,
+      quiz: entity.quiz,
+      projectPresentation: entity.projectPresentation,
       active: entity.active,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

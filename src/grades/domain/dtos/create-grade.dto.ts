@@ -14,16 +14,15 @@ export class CreateGradeDto {
   @IsNotEmpty()
   studentId: number;
 
-  @ApiProperty({
-    description: 'Cycle (ciclo)',
-    example: '2024-I',
-    maxLength: 100,
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  ciclo?: string;
+  @ApiProperty({ description: 'Group ID', example: 1 })
+  @IsInt()
+  @IsNotEmpty()
+  groupId: number;
+
+  @ApiProperty({ description: 'Cycle ID', example: 1 })
+  @IsInt()
+  @IsNotEmpty()
+  cycleId: number;
 
   @ApiProperty({ description: 'Month (mes)', example: 1, required: false })
   @IsInt()
@@ -39,4 +38,18 @@ export class CreateGradeDto {
   @IsNumber()
   @IsOptional()
   notaFinal?: number;
+
+  @ApiProperty({ description: 'Teacher ID', example: 1 })
+  @IsInt()
+  @IsNotEmpty()
+  teacherId: number;
+
+  @ApiProperty({
+    description: 'Observations',
+    example: 'Buen desempeño',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  observaciones?: string;
 }

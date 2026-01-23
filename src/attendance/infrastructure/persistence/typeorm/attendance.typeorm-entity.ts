@@ -16,6 +16,12 @@ export class AttendanceTypeOrmEntity {
   @Column({ name: 'alumno_id', type: 'int' })
   studentId: number;
 
+  @Column({ name: 'grupo_id', type: 'int' })
+  groupId: number;
+
+  @Column({ name: 'ciclo_id', type: 'int' })
+  cycleId: number;
+
   @Column({ type: 'date' })
   fecha: Date;
 
@@ -42,4 +48,12 @@ export class AttendanceTypeOrmEntity {
   @ManyToOne('UsersTypeOrmEntity', 'attendancesAsTeacher')
   @JoinColumn({ name: 'docente_id' })
   teacher: any;
+
+  @ManyToOne('GroupsTypeOrmEntity', 'attendances')
+  @JoinColumn({ name: 'grupo_id' })
+  group: any;
+
+  @ManyToOne('CyclesTypeOrmEntity', 'attendances')
+  @JoinColumn({ name: 'ciclo_id' })
+  cycle: any;
 }

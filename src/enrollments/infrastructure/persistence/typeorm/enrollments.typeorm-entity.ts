@@ -23,14 +23,17 @@ export class EnrollmentsTypeOrmEntity {
   @Column({ name: 'plan_id', type: 'int' })
   planId: number;
 
+  @Column({ name: 'grupo_id', type: 'int', nullable: true })
+  groupId: number;
+
+  @Column({ name: 'nivel_inicial_id', type: 'int', nullable: true })
+  initialLevelId: number;
+
+  @Column({ name: 'ciclo_inicial_id', type: 'int', nullable: true })
+  initialCycleId: number;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   modalidad: string;
-
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  horario: string;
-
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  nivel: string;
 
   @Column({
     name: 'tipo_inscripcion',
@@ -89,6 +92,21 @@ export class EnrollmentsTypeOrmEntity {
   @JoinColumn({ name: 'asesor_id' })
   advisor: any;
 
+  @ManyToOne('GroupsTypeOrmEntity', 'enrollments')
+  @JoinColumn({ name: 'grupo_id' })
+  group: any;
+
+  @ManyToOne('LevelsTypeOrmEntity', 'enrollments')
+  @JoinColumn({ name: 'nivel_inicial_id' })
+  initialLevel: any;
+
+  @ManyToOne('CyclesTypeOrmEntity', 'enrollments')
+  @JoinColumn({ name: 'ciclo_inicial_id' })
+  initialCycle: any;
+
   @OneToMany('PaymentsTypeOrmEntity', 'enrollment')
   payments: any[];
+
+  @OneToMany('StudentProgressTypeOrmEntity', 'enrollment')
+  progressRecords: any[];
 }

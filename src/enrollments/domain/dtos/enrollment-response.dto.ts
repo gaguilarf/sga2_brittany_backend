@@ -20,15 +20,14 @@ export class EnrollmentResponseDto {
   })
   modalidad?: string;
 
-  @ApiProperty({
-    description: 'Schedule',
-    example: 'Lunes y Miércoles 6pm-8pm',
-    required: false,
-  })
-  horario?: string;
+  @ApiProperty({ description: 'Group ID', example: 1, required: false })
+  groupId?: number;
 
-  @ApiProperty({ description: 'Level', example: 'Básico', required: false })
-  nivel?: string;
+  @ApiProperty({ description: 'Initial Level ID', example: 1, required: false })
+  initialLevelId?: number;
+
+  @ApiProperty({ description: 'Initial Cycle ID', example: 1, required: false })
+  initialCycleId?: number;
 
   @ApiProperty({
     description: 'Enrollment type',

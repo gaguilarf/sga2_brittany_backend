@@ -31,6 +31,9 @@ export class AdminLeadsTypeOrmEntity {
   @Column({ name: 'sede_id', type: 'int', nullable: true })
   campusId: number;
 
+  @Column({ name: 'plan_interes_id', type: 'int', nullable: true })
+  planInteresId: number;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   modalidad: string;
 
@@ -57,4 +60,8 @@ export class AdminLeadsTypeOrmEntity {
   @ManyToOne('UsersTypeOrmEntity', 'adminLeadsAsAdvisor')
   @JoinColumn({ name: 'asesor_id' })
   advisor: any;
+
+  @ManyToOne('PlansTypeOrmEntity', 'adminLeads')
+  @JoinColumn({ name: 'plan_interes_id' })
+  planInteres: any;
 }

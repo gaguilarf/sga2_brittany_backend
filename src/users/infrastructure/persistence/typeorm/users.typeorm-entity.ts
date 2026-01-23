@@ -54,4 +54,13 @@ export class UsersTypeOrmEntity {
 
   @OneToMany('AttendanceTypeOrmEntity', 'teacher')
   attendancesAsTeacher: any[];
+
+  @OneToMany('UserCampusesTypeOrmEntity', 'user')
+  userCampuses: any[];
+
+  @OneToMany('GradesTypeOrmEntity', 'teacher')
+  gradesRegistered: any[];
+
+  @OneToMany('GroupTeachersTypeOrmEntity', 'teacher')
+  groupAssignments: any[];
 }

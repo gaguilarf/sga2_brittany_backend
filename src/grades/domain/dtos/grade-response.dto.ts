@@ -8,8 +8,11 @@ export class GradeResponseDto {
   @ApiProperty({ example: 1 })
   studentId: number;
 
-  @ApiProperty({ example: '2024-I', required: false })
-  ciclo?: string;
+  @ApiProperty({ example: 1 })
+  groupId: number;
+
+  @ApiProperty({ example: 1 })
+  cycleId: number;
 
   @ApiProperty({ example: 1, required: false })
   mes?: number;
@@ -31,4 +34,10 @@ export class GradeResponseDto {
 
   @ApiProperty({ type: [GradeDetailResponseDto], required: false })
   details?: GradeDetailResponseDto[];
+
+  @ApiProperty({ example: 1 })
+  teacherId: number;
+
+  @ApiProperty({ example: 'Buen desempeño', required: false })
+  observaciones?: string;
 }

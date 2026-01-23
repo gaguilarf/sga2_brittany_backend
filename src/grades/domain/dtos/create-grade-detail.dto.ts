@@ -14,19 +14,53 @@ export class CreateGradeDetailDto {
   @IsNotEmpty()
   gradeId: number;
 
-  @ApiProperty({
-    description: 'Section name (apartado)',
-    example: 'Grammar',
-    maxLength: 100,
-    required: false,
-  })
-  @IsString()
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
   @IsOptional()
-  @MaxLength(100)
-  apartado?: string;
+  homework?: number;
 
-  @ApiProperty({ description: 'Score (puntaje)', example: 18.5 })
-  @IsNumber()
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
   @IsOptional()
-  puntaje?: number;
+  oralProduction?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  writtenProject?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  midtermExam?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  firstOral?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  finalWritten?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  finalOral?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  participation?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  quiz?: number;
+
+  @ApiProperty({ example: 18, required: false })
+  @IsInt()
+  @IsOptional()
+  projectPresentation?: number;
 }

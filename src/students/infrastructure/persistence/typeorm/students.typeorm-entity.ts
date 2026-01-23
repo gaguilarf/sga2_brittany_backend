@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('alumnos')
@@ -23,6 +25,12 @@ export class StudentsTypeOrmEntity {
 
   @Column({ type: 'int', nullable: true })
   edad: number;
+
+  @Column({ name: 'ciclo_actual_id', type: 'int', nullable: true })
+  currentCycleId: number;
+
+  @Column({ name: 'grupo_actual_id', type: 'int', nullable: true })
+  currentGroupId: number;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   distrito: string;
@@ -64,4 +72,15 @@ export class StudentsTypeOrmEntity {
 
   @OneToMany('AttendanceTypeOrmEntity', 'student')
   attendances: any[];
+
+  @ManyToOne('CyclesTypeOrmEntity', 'students')
+  @JoinColumn({ name: 'ciclo_actual_id' })
+  currentCycle: any;
+
+  @ManyToOne('GroupsTypeOrmEntity', 'students')
+  @JoinColumn({ name: 'grupo_actual_id' })
+  currentGroup: any;
+
+  @OneToMany('StudentProgressTypeOrmEntity', 'student')
+  progressRecords: any[];
 }

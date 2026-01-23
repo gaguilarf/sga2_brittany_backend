@@ -36,4 +36,7 @@ export class PlansTypeOrmEntity {
 
   @OneToMany('PlansCampusesTypeOrmEntity', 'plan')
   plansCampuses: any[];
+
+  @OneToMany('LevelsTypeOrmEntity', 'plan')
+  levels: any[];
 }

@@ -17,8 +17,11 @@ export class GradesTypeOrmEntity {
   @Column({ name: 'alumno_id', type: 'int' })
   studentId: number;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  ciclo: string;
+  @Column({ name: 'grupo_id', type: 'int' })
+  groupId: number;
+
+  @Column({ name: 'ciclo_id', type: 'int' })
+  cycleId: number;
 
   @Column({ type: 'int', nullable: true })
   mes: number;
@@ -34,6 +37,15 @@ export class GradesTypeOrmEntity {
     nullable: true,
   })
   notaFinal: number;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  estado: string; // Pendiente, Publicada, Archivada
+
+  @Column({ name: 'docente_id', type: 'int' })
+  teacherId: number;
+
+  @Column({ type: 'text', nullable: true })
+  observaciones: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -51,4 +63,16 @@ export class GradesTypeOrmEntity {
 
   @OneToMany('GradeDetailsTypeOrmEntity', 'grade')
   details: any[];
+
+  @ManyToOne('GroupsTypeOrmEntity', 'grades')
+  @JoinColumn({ name: 'grupo_id' })
+  group: any;
+
+  @ManyToOne('CyclesTypeOrmEntity', 'grades')
+  @JoinColumn({ name: 'ciclo_id' })
+  cycle: any;
+
+  @ManyToOne('UsersTypeOrmEntity', 'gradesRegistered')
+  @JoinColumn({ name: 'docente_id' })
+  teacher: any;
 }

@@ -1,11 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CampusesTypeOrmEntity } from './infrastructure/persistence/typeorm/campuses.typeorm-entity';
+import { UserCampusesTypeOrmEntity } from './infrastructure/persistence/typeorm/user-campuses.typeorm-entity';
 import { CampusesService } from './application/services/campuses.service';
 import { CampusesController } from './presentation/controllers/campuses.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CampusesTypeOrmEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      CampusesTypeOrmEntity,
+      UserCampusesTypeOrmEntity,
+    ]),
+  ],
   controllers: [CampusesController],
   providers: [CampusesService],
   exports: [CampusesService],

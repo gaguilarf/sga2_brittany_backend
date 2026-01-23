@@ -39,6 +39,12 @@ export class PaymentsTypeOrmEntity {
   @Column({ name: 'sede_id', type: 'int', nullable: true })
   campusId: number;
 
+  @Column({ name: 'ciclo_asociado', type: 'int', nullable: true })
+  associatedCycleId: number;
+
+  @Column({ name: 'grupo_asociado', type: 'int', nullable: true })
+  associatedGroupId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
@@ -56,4 +62,12 @@ export class PaymentsTypeOrmEntity {
   @ManyToOne('CampusesTypeOrmEntity', 'payments')
   @JoinColumn({ name: 'sede_id' })
   campus: any;
+
+  @ManyToOne('CyclesTypeOrmEntity', 'payments')
+  @JoinColumn({ name: 'ciclo_asociado' })
+  associatedCycle: any;
+
+  @ManyToOne('GroupsTypeOrmEntity', 'payments')
+  @JoinColumn({ name: 'grupo_asociado' })
+  associatedGroup: any;
 }

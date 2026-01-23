@@ -35,27 +35,20 @@ export class CreateEnrollmentDto {
   @MaxLength(100)
   modalidad?: string;
 
-  @ApiProperty({
-    description: 'Schedule',
-    example: 'Lunes y Miércoles 6pm-8pm',
-    maxLength: 100,
-    required: false,
-  })
-  @IsString()
+  @ApiProperty({ description: 'Group ID', example: 1, required: false })
+  @IsInt()
   @IsOptional()
-  @MaxLength(100)
-  horario?: string;
+  groupId?: number;
 
-  @ApiProperty({
-    description: 'Level',
-    example: 'Básico',
-    maxLength: 100,
-    required: false,
-  })
-  @IsString()
+  @ApiProperty({ description: 'Initial Level ID', example: 1, required: false })
+  @IsInt()
   @IsOptional()
-  @MaxLength(100)
-  nivel?: string;
+  initialLevelId?: number;
+
+  @ApiProperty({ description: 'Initial Cycle ID', example: 1, required: false })
+  @IsInt()
+  @IsOptional()
+  initialCycleId?: number;
 
   @ApiProperty({
     description: 'Enrollment type',
