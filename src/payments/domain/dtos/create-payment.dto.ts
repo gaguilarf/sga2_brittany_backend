@@ -60,8 +60,11 @@ export class CreatePaymentDto {
   @IsOptional()
   fechaPago?: string;
 
-  @ApiProperty({ description: 'Campus ID', example: 1, required: false })
-  @IsInt()
   @IsOptional()
   campusId?: number;
+
+  @ApiProperty({ description: 'Debt ID', example: 1, required: false })
+  @IsInt()
+  @IsOptional()
+  debtId?: number;
 }

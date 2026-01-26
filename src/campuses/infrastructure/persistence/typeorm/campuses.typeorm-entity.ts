@@ -6,6 +6,9 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { PriceSedePlanTypeOrmEntity } from '../../../../plans/infrastructure/persistence/typeorm/price-sede-plan.typeorm-entity';
+import { EnrollmentsTypeOrmEntity } from '../../../../enrollments/infrastructure/persistence/typeorm/enrollments.typeorm-entity';
+import { PaymentsTypeOrmEntity } from '../../../../payments/infrastructure/persistence/typeorm/payments.typeorm-entity';
 
 @Entity('sedes')
 export class CampusesTypeOrmEntity {
@@ -31,15 +34,15 @@ export class CampusesTypeOrmEntity {
   active: boolean;
 
   // Relations
-  @OneToMany('EnrollmentsTypeOrmEntity', 'campus')
-  enrollments: any[];
+  @OneToMany(() => EnrollmentsTypeOrmEntity, (enrollment) => enrollment.campus)
+  enrollments: EnrollmentsTypeOrmEntity[];
 
-  @OneToMany('PaymentsTypeOrmEntity', 'campus')
-  payments: any[];
+  @OneToMany(() => PaymentsTypeOrmEntity, (payment) => payment.campus)
+  payments: PaymentsTypeOrmEntity[];
 
   @OneToMany('AdminLeadsTypeOrmEntity', 'campus')
   adminLeads: any[];
 
-  @OneToMany('PlansCampusesTypeOrmEntity', 'campus')
-  plansCampuses: any[];
+  @OneToMany(() => PriceSedePlanTypeOrmEntity, (price) => price.campus)
+  prices: PriceSedePlanTypeOrmEntity[];
 }

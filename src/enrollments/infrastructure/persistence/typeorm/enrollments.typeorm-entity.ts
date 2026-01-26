@@ -19,6 +19,7 @@ import { LevelsTypeOrmEntity } from '../../../../levels/infrastructure/persisten
 import { CyclesTypeOrmEntity } from '../../../../levels/infrastructure/persistence/typeorm/cycles.typeorm-entity';
 import { PaymentsTypeOrmEntity } from '../../../../payments/infrastructure/persistence/typeorm/payments.typeorm-entity';
 import { StudentProgressTypeOrmEntity } from '../../../../students/infrastructure/persistence/typeorm/student-progress.typeorm-entity';
+import { DebtTypeOrmEntity } from '../../../../debts/infrastructure/persistence/typeorm/debts.typeorm-entity';
 
 @Entity('matriculas')
 export class EnrollmentsTypeOrmEntity {
@@ -97,6 +98,15 @@ export class EnrollmentsTypeOrmEntity {
   })
   saldo: number;
 
+  @Column({ name: 'fecha_inicio', type: 'date', nullable: true })
+  fechaInicio: Date;
+
+  @Column({ name: 'fecha_fin_estimada', type: 'date', nullable: true })
+  fechaFinEstimada: Date;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  estado: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
@@ -145,6 +155,9 @@ export class EnrollmentsTypeOrmEntity {
 
   @OneToMany(() => PaymentsTypeOrmEntity, (payment) => payment.enrollment)
   payments: PaymentsTypeOrmEntity[];
+
+  @OneToMany(() => DebtTypeOrmEntity, (debt) => debt.enrollment)
+  debts: DebtTypeOrmEntity[];
 
   @OneToMany(
     () => StudentProgressTypeOrmEntity,

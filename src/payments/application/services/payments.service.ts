@@ -5,6 +5,7 @@ import { PaymentsTypeOrmEntity } from '../../infrastructure/persistence/typeorm/
 import { CreatePaymentDto } from '../../domain/dtos/create-payment.dto';
 import { UpdatePaymentDto } from '../../domain/dtos/update-payment.dto';
 import { PaymentResponseDto } from '../../domain/dtos/payment-response.dto';
+import { DebtsService } from '../../../debts/application/services/debts.service';
 
 @Injectable()
 export class PaymentsService {
@@ -13,6 +14,7 @@ export class PaymentsService {
   constructor(
     @InjectRepository(PaymentsTypeOrmEntity)
     private readonly paymentsRepository: Repository<PaymentsTypeOrmEntity>,
+    private readonly debtsService: DebtsService,
   ) {}
 
   async create(
@@ -24,6 +26,15 @@ export class PaymentsService {
       );
       const payment = this.paymentsRepository.create(createPaymentDto);
       const savedPayment = await this.paymentsRepository.save(payment);
+
+      // Si el pago está vinculado a una deuda, actualizar el estado de la deuda
+      if (createPaymentDto.debtId) {
+        await this.debtsService.updateDebtStatus(
+          createPaymentDto.debtId,
+          createPaymentDto.monto,
+        );
+      }
+
       this.logger.log(
         `Payment created successfully with ID: ${savedPayment.id}`,
       );

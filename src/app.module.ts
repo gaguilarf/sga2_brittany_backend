@@ -17,6 +17,7 @@ import { UsersModule } from './users/users.module';
 import { LevelsModule } from './levels/levels.module';
 import { GroupsModule } from './groups/groups.module';
 import { ProductsModule } from './products/products.module';
+import { DebtsModule } from './debts/debts.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ProductsModule } from './products/products.module';
     LevelsModule,
     GroupsModule,
     ProductsModule,
+    DebtsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

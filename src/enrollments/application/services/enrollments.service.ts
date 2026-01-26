@@ -6,6 +6,10 @@ import { CreateEnrollmentDto } from '../../domain/dtos/create-enrollment.dto';
 import { UpdateEnrollmentDto } from '../../domain/dtos/update-enrollment.dto';
 import { EnrollmentResponseDto } from '../../domain/dtos/enrollment-response.dto';
 
+import { PricesService } from '../../../plans/application/services/prices.service';
+import { DebtsService } from '../../../debts/application/services/debts.service';
+import { PaymentsService } from '../../../payments/application/services/payments.service';
+
 @Injectable()
 export class EnrollmentsService {
   private readonly logger = new Logger(EnrollmentsService.name);
@@ -13,6 +17,9 @@ export class EnrollmentsService {
   constructor(
     @InjectRepository(EnrollmentsTypeOrmEntity)
     private readonly enrollmentsRepository: Repository<EnrollmentsTypeOrmEntity>,
+    private readonly pricesService: PricesService,
+    private readonly debtsService: DebtsService,
+    private readonly paymentsService: PaymentsService,
   ) {}
 
   async create(
@@ -29,6 +36,101 @@ export class EnrollmentsService {
       this.logger.log(
         `Enrollment created successfully with ID: ${savedEnrollment.id}`,
       );
+
+      // --- GENERACIÓN DE DEUDAS ---
+      const now = new Date();
+      const mesAplicado = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      let debtToPayId: number | null = null;
+
+      if (createEnrollmentDto.enrollmentType === 'PLAN') {
+        // 1. Inscripción (Deuda inicial que se paga primero)
+        const inscDebt = await this.debtsService.createDebt({
+          enrollmentId: savedEnrollment.id,
+          tipoDeuda: 'INSCRIPCION',
+          concepto: 'Pago por Inscripción',
+          monto: 80.0, // Por ahora fijo, podría venir de PricesService
+          fechaVencimiento: now,
+          mesAplicado,
+          estado: 'PENDIENTE',
+        });
+        debtToPayId = inscDebt.id;
+
+        // 2. Materiales
+        await this.debtsService.createDebt({
+          enrollmentId: savedEnrollment.id,
+          tipoDeuda: 'MATERIALES',
+          concepto: 'Materiales Académicos',
+          monto: 0.0, // Por ahora 0, según DTO o PricesService
+          fechaVencimiento: now,
+          mesAplicado,
+          estado: 'PENDIENTE',
+        });
+
+        // 3. Primera Mensualidad
+        const prices = await this.pricesService.getPrice(
+          savedEnrollment.campusId,
+          savedEnrollment.planId,
+        );
+
+        const firstMonthDueDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          20,
+        );
+
+        await this.debtsService.createDebt({
+          enrollmentId: savedEnrollment.id,
+          tipoDeuda: 'MENSUALIDAD',
+          concepto: `Mensualidad - ${mesAplicado}`,
+          monto: prices?.precioMensualidad || 280.0,
+          fechaVencimiento: firstMonthDueDate,
+          mesAplicado,
+          cicloAsociadoId: savedEnrollment.initialCycleId,
+          nivelAsociadoId: savedEnrollment.initialLevelId,
+          estado: 'PENDIENTE',
+        });
+      } else if (createEnrollmentDto.enrollmentType === 'PRODUCT') {
+        // Deuda por producto
+        const productDebt = await this.debtsService.createDebt({
+          enrollmentId: savedEnrollment.id,
+          tipoDeuda: 'PRODUCTO',
+          concepto: `Producto contratado`,
+          monto: Number(savedEnrollment.saldo) || 0,
+          fechaVencimiento: now,
+          productId: savedEnrollment.productId,
+          estado: 'PENDIENTE',
+        });
+        debtToPayId = productDebt.id;
+      }
+
+      // --- REGISTRO DE PAGO INICIAL ---
+      if (createEnrollmentDto.montoPago && createEnrollmentDto.montoPago > 0) {
+        await this.paymentsService.create({
+          enrollmentId: savedEnrollment.id,
+          monto: createEnrollmentDto.montoPago,
+          metodo: createEnrollmentDto.metodoPago || 'Efectivo',
+          tipo: createEnrollmentDto.tipoPago || 'INSCRIPCION',
+          numeroBoleta: createEnrollmentDto.numeroBoleta,
+          fechaPago: now.toISOString(),
+          campusId: savedEnrollment.campusId,
+          debtId: debtToPayId,
+        } as any);
+
+        // Actualizar estado de la deuda vinculada
+        if (debtToPayId) {
+          await this.debtsService.updateDebtStatus(
+            debtToPayId,
+            createEnrollmentDto.montoPago,
+          );
+        }
+
+        // Actualizar saldo de la matrícula
+        savedEnrollment.saldo =
+          Number(savedEnrollment.saldo) - createEnrollmentDto.montoPago;
+        await this.enrollmentsRepository.save(savedEnrollment);
+      }
+
       return this.toResponseDto(savedEnrollment);
     } catch (error) {
       this.logger.error(

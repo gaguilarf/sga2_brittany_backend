@@ -7,6 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import { DebtTypeOrmEntity } from '../../../../debts/infrastructure/persistence/typeorm/debts.typeorm-entity';
 
 @Entity('pagos')
 export class PaymentsTypeOrmEntity {
@@ -45,6 +46,9 @@ export class PaymentsTypeOrmEntity {
   @Column({ name: 'grupo_asociado', type: 'int', nullable: true })
   associatedGroupId: number;
 
+  @Column({ name: 'deuda_id', type: 'int', nullable: true })
+  debtId: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
@@ -70,4 +74,8 @@ export class PaymentsTypeOrmEntity {
   @ManyToOne('GroupsTypeOrmEntity', 'payments')
   @JoinColumn({ name: 'grupo_asociado' })
   associatedGroup: any;
+
+  @ManyToOne(() => DebtTypeOrmEntity, (debt) => debt.payments)
+  @JoinColumn({ name: 'deuda_id' })
+  debt: DebtTypeOrmEntity;
 }

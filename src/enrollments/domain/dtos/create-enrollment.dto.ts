@@ -130,12 +130,34 @@ export class CreateEnrollmentDto {
   @IsInt()
   productId?: number;
 
-  @ApiProperty({
-    example: '2026-02-15',
-    description: 'Fecha de examen (solo para productos que lo requieran)',
-    required: false,
-  })
   @IsOptional()
   @IsDateString()
   examDate?: string;
+
+  @ApiProperty({
+    description: 'Monto del pago inicial',
+    example: 100,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  montoPago?: number;
+
+  @ApiProperty({
+    description: 'Método del pago inicial',
+    example: 'Efectivo',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  metodoPago?: string;
+
+  @ApiProperty({
+    description: 'Tipo del pago inicial',
+    example: 'INSCRIPCION',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  tipoPago?: string;
 }

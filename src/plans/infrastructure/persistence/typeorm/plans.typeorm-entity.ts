@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { PriceSedePlanTypeOrmEntity } from './price-sede-plan.typeorm-entity';
+import { EnrollmentsTypeOrmEntity } from '../../../../enrollments/infrastructure/persistence/typeorm/enrollments.typeorm-entity';
 
 @Entity('planes')
 export class PlansTypeOrmEntity {
@@ -34,6 +36,6 @@ export class PlansTypeOrmEntity {
   @OneToMany('EnrollmentsTypeOrmEntity', 'plan')
   enrollments: any[];
 
-  @OneToMany('PlansCampusesTypeOrmEntity', 'plan')
-  plansCampuses: any[];
+  @OneToMany(() => PriceSedePlanTypeOrmEntity, (price) => price.plan)
+  prices: PriceSedePlanTypeOrmEntity[];
 }
