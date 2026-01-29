@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EnrollmentsTypeOrmEntity } from '../../infrastructure/persistence/typeorm/enrollments.typeorm-entity';
@@ -29,10 +34,29 @@ export class EnrollmentsService {
   async create(
     createEnrollmentDto: CreateEnrollmentDto,
   ): Promise<EnrollmentResponseDto> {
+    this.logger.log(
+      `Creating new enrollment for student ID: ${createEnrollmentDto.studentId}`,
+    );
+
     try {
-      this.logger.log(
-        `Creating new enrollment for student ID: ${createEnrollmentDto.studentId}`,
-      );
+      // Validate uniqueness for PLAN enrollment
+      if (createEnrollmentDto.enrollmentType === 'PLAN') {
+        const existingPlanEnrollment = await this.enrollmentsRepository.findOne(
+          {
+            where: {
+              studentId: createEnrollmentDto.studentId,
+              enrollmentType: 'PLAN',
+              active: true,
+            },
+          },
+        );
+
+        if (existingPlanEnrollment) {
+          throw new ConflictException(
+            'El alumno ya tiene una matrícula de tipo PLAN activa. No puede registrar otra.',
+          );
+        }
+      }
 
       const enrollment = this.enrollmentsRepository.create(createEnrollmentDto);
       const savedEnrollment = await this.enrollmentsRepository.save(enrollment);
