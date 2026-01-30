@@ -3,8 +3,7 @@ name: Deploy to Production
 on:
   push:
     branches:
-      - master # Rama de producción (sga_brittany_back)
-      - main # También desde desarrollo para testing
+      - main # Se ejecuta automáticamente al hacer push a main
   workflow_dispatch: # También permite ejecución manual desde GitHub
 
 jobs:
@@ -60,8 +59,8 @@ jobs:
           echo "✅ FILES UPLOADED SUCCESSFULLY!"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          echo "🌐 API URL: https://sga.brittanygroup.edu.pe/api"
-          echo "📚 Swagger: https://sga.brittanygroup.edu.pe/api/docs"
+          echo "🌐 API URL: https://api.brittanygroup.edu.pe/api"
+          echo "📚 Swagger: https://api.brittanygroup.edu.pe/api/docs"
           echo ""
           echo "⚠️  REQUIRED STEPS ON THE SERVER:"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -69,7 +68,7 @@ jobs:
           echo "1. SSH into your server"
           echo ""
           echo "2. Navigate to api directory:"
-          echo "   cd /public_html/api"
+          echo "   cd /api.brittanygroup.edu.pe/"
           echo ""
           echo "3. Install dependencies (REQUIRED):"
           echo "   npm ci --omit=dev --legacy-peer-deps"
@@ -81,11 +80,9 @@ jobs:
           echo "   - npm install -g pm2"
           echo "   - pm2 start ecosystem.config.json"
           echo "   - pm2 save"
-          echo "   - pm2 startup"
           echo ""
           echo "5. If updating existing deployment:"
           echo "   - pm2 restart brittany-api"
-          echo "   - pm2 logs brittany-api"
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "⚡ Note: node_modules are NOT uploaded via FTP"
