@@ -122,6 +122,20 @@ Aquí podrás probar todos los endpoints, ver los esquemas de los DTOs y verific
 
 ---
 
+## 🚀 Deployment
+
+Para desplegar esta aplicación en producción, consulta la [Guía de Deployment](./DEPLOYMENT.md) que incluye:
+
+- Configuración de GitHub Actions para CI/CD
+- Configuración del servidor y PM2
+- Variables de entorno de producción
+- Proxy reverso (Apache/Nginx)
+- Troubleshooting y monitoreo
+
+**Repositorio de Producción:** [sga_brittany_back](https://github.com/gaguilarf/sga_brittany_back.git)
+
+---
+
 ## 📄 Licencia
 
 Privado - Brittany Group © 2026
