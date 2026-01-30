@@ -98,6 +98,16 @@ export class EnrollmentsTypeOrmEntity {
   })
   saldo: number;
 
+  @Column({
+    name: 'saldo_favor',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    default: 0,
+  })
+  saldoFavor: number;
+
   @Column({ name: 'fecha_inicio', type: 'date', nullable: true })
   fechaInicio: Date;
 

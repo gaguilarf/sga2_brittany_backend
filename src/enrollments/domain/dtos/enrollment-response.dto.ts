@@ -79,6 +79,9 @@ export class EnrollmentResponseDto {
   @ApiProperty({ description: 'Balance', example: 0 })
   saldo: number;
 
+  @ApiProperty({ description: 'Saldo a favor (Prepagos)', example: 0 })
+  saldoFavor: number;
+
   @ApiProperty({ description: 'Active status', example: true })
   active: boolean;
 

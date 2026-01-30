@@ -349,6 +349,7 @@ export class EnrollmentsService {
       origen: entity.origen,
       numeroBoleta: entity.numeroBoleta,
       saldo: Number(entity.saldo),
+      saldoFavor: Number(entity.saldoFavor),
       active: entity.active,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

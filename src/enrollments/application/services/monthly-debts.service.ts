@@ -4,6 +4,9 @@ import { Repository, MoreThan } from 'typeorm';
 import { EnrollmentsTypeOrmEntity } from '../../infrastructure/persistence/typeorm/enrollments.typeorm-entity';
 import { DebtsService } from '../../../debts/application/services/debts.service';
 import { PricesService } from '../../../plans/application/services/prices.service';
+import { AccountStatementService } from './account-statement.service';
+
+import { ConsumoTypeOrmEntity } from '../../infrastructure/persistence/typeorm/consumos.typeorm-entity';
 
 @Injectable()
 export class MonthlyDebtsService {
@@ -12,18 +15,23 @@ export class MonthlyDebtsService {
   constructor(
     @InjectRepository(EnrollmentsTypeOrmEntity)
     private readonly enrollmentsRepository: Repository<EnrollmentsTypeOrmEntity>,
+    @InjectRepository(ConsumoTypeOrmEntity)
+    private readonly consumosRepository: Repository<ConsumoTypeOrmEntity>,
     private readonly debtsService: DebtsService,
     private readonly pricesService: PricesService,
+    private readonly accountStatementService: AccountStatementService,
   ) {}
 
   /**
-   * Genera las deudas mensuales para todas las matrículas activas de tipo PLAN.
+   * Genera las deudas mensuales o consume crédito para todas las matrículas activas de tipo PLAN.
    * @param yearMonth Formato 'YYYY-MM'
    */
   async generateMonthlyDebts(
     yearMonth: string,
   ): Promise<{ processed: number; failures: number }> {
-    this.logger.log(`Starting monthly debt generation for: ${yearMonth}`);
+    this.logger.log(
+      `Starting monthly debt/consumption generation for: ${yearMonth}`,
+    );
 
     // Obtener todas las matrículas activas de tipo PLAN
     const enrollments = await this.enrollmentsRepository.find({
@@ -32,7 +40,6 @@ export class MonthlyDebtsService {
         enrollmentType: 'PLAN',
         estado: 'ACTIVA',
       },
-      relations: ['plan', 'campus'],
     });
 
     let processed = 0;
@@ -40,41 +47,30 @@ export class MonthlyDebtsService {
 
     for (const enrollment of enrollments) {
       try {
-        // Verificar si ya existe una deuda de mensualidad para este mes y matrícula
-        const existingDebts =
-          await this.debtsService.getPendingDebtsByEnrollment(enrollment.id);
-        const alreadyHasMonth = existingDebts.some(
-          (d) => d.tipoDeuda === 'MENSUALIDAD' && d.mesAplicado === yearMonth,
+        // Verificar si ya existe una deuda o consumo para este mes y matrícula
+        // (La verificación se delega o se hace aquí para evitar duplicados en el log de consumos también)
+        const hasProcessed = await this.checkIfMonthProcessed(
+          enrollment.id,
+          yearMonth,
         );
 
-        if (alreadyHasMonth) {
+        if (hasProcessed) {
           this.logger.warn(
-            `Enrollment ${enrollment.id} already has monthly debt for ${yearMonth}. Skipping.`,
+            `Enrollment ${enrollment.id} already processed for ${yearMonth}. Skipping.`,
           );
           continue;
         }
 
-        // Obtener precio para el plan y sede
-        const prices = await this.pricesService.getPrice(
-          enrollment.campusId,
-          enrollment.planId,
+        // Delegar lógica al AccountStatementService
+        await this.accountStatementService.processMonthlyConsumption(
+          enrollment.id,
+          yearMonth,
         );
-
-        // Crear deuda
-        await this.debtsService.createDebt({
-          enrollmentId: enrollment.id,
-          tipoDeuda: 'MENSUALIDAD',
-          concepto: `Mensualidad - ${yearMonth}`,
-          monto: prices?.precioMensualidad || 280.0,
-          fechaVencimiento: this.calculateDueDate(yearMonth),
-          mesAplicado: yearMonth,
-          estado: 'PENDIENTE',
-        });
 
         processed++;
       } catch (error) {
         this.logger.error(
-          `Failed to generate debt for enrollment ${enrollment.id}: ${error.message}`,
+          `Failed to process month for enrollment ${enrollment.id}: ${error.message}`,
         );
         failures++;
       }
@@ -86,8 +82,28 @@ export class MonthlyDebtsService {
     return { processed, failures };
   }
 
+  private async checkIfMonthProcessed(
+    enrollmentId: number,
+    yearMonth: string,
+  ): Promise<boolean> {
+    // 1. Verificar en deudas
+    const existingDebts =
+      await this.debtsService.getPendingDebtsByEnrollment(enrollmentId);
+    const hasDebt = existingDebts.some(
+      (d) => d.tipoDeuda === 'MENSUALIDAD' && d.mesAplicado === yearMonth,
+    );
+    if (hasDebt) return true;
+
+    // 2. Verificar en consumos (créditos ya aplicados)
+    const hasConsumo = await this.consumosRepository.findOne({
+      where: { enrollmentId, mes: yearMonth, active: true },
+    });
+    if (hasConsumo) return true;
+
+    return false;
+  }
+
   private calculateDueDate(yearMonth: string): Date {
-    // Las clases empiezan los 20 de cada mes, por lo tanto el vencimiento es ese día
     const [year, month] = yearMonth.split('-').map(Number);
     return new Date(year, month - 1, 20);
   }

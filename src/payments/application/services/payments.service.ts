@@ -38,33 +38,9 @@ export class PaymentsService {
       const paymentData = { ...createPaymentDto };
       delete (paymentData as any).mesesAdelantados;
 
-      // Business Rule: Exclusivity between Mensualidad and Pago Adelantado
-      if (
-        createPaymentDto.tipo === 'Mensualidad' ||
-        createPaymentDto.esAdelantado
-      ) {
-        const existingPayments = await this.paymentsRepository.find({
-          where: { enrollmentId: createPaymentDto.enrollmentId },
-        });
-
-        if (
-          createPaymentDto.tipo === 'Mensualidad' &&
-          existingPayments.some((p) => p.tipo === 'Mensualidad Adelantada')
-        ) {
-          throw new BadRequestException(
-            'No se puede registrar una mensualidad si ya existe una mensualidad adelantada para esta matrícula.',
-          );
-        }
-
-        if (
-          createPaymentDto.esAdelantado &&
-          existingPayments.some((p) => p.tipo === 'Mensualidad')
-        ) {
-          throw new BadRequestException(
-            'No se puede registrar una mensualidad adelantada si ya existe una mensualidad para esta matrícula.',
-          );
-        }
-      }
+      // NOTE: Exclusivity between Mensualidad and Pago Adelantado is now managed
+      // primarily by the frontend per-transaction logic.
+      // Global restriction removed to allow prepaying future months even if previous ones were paid normally.
 
       const payment = this.paymentsRepository.create(paymentData);
 
@@ -130,55 +106,25 @@ export class PaymentsService {
         }
 
         this.logger.log(
-          `Saving prepayment details for payment ID: ${savedPayment.id}`,
+          `Saving prepayment details and incrementing saldoFavor for enrollment: ${savedPayment.enrollmentId}`,
         );
+
+        // Actualizar saldo a favor en la matrícula
+        enrollment.saldoFavor =
+          Number(enrollment.saldoFavor || 0) + Number(savedPayment.monto);
+        await this.enrollmentsRepository.save(enrollment);
+
         for (const detail of createPaymentDto.mesesAdelantados) {
-          const savedDetail = await this.pagoAdelantadoDetalleRepository.save({
+          await this.pagoAdelantadoDetalleRepository.save({
             pagoId: savedPayment.id,
             enrollmentId: savedPayment.enrollmentId,
             mesAdelantado: detail.mes,
             montoAsignado: detail.monto,
-            estado: 'PENDIENTE_APLICACION',
-          });
-
-          // Buscar deuda correspondiente al mes adelantado
-          const matchingDebt =
-            await this.debtsService.findDebtByEnrollmentAndMonth(
-              savedPayment.enrollmentId,
-              detail.mes,
-            );
-
-          let debtToApplyId = matchingDebt?.id;
-
-          if (!debtToApplyId) {
-            this.logger.log(`Creating new debt for month: ${detail.mes}`);
-            const newDebt = await this.debtsService.createDebt({
-              enrollmentId: savedPayment.enrollmentId,
-              tipoDeuda: 'MENSUALIDAD',
-              concepto: `Mensualidad Adelantada`,
-              monto: detail.monto,
-              fechaVencimiento: new Date(`${detail.mes}-01`), // Primer día del mes
-              mesAplicado: detail.mes,
-              estado: 'PENDIENTE',
-            });
-            debtToApplyId = newDebt.id;
-          } else if (matchingDebt && matchingDebt.estado === 'PAGADO') {
-            throw new BadRequestException(
-              `El mes ${detail.mes} ya se encuentra pagado.`,
-            );
-          }
-
-          // Aplicar el pago adelantado a la deuda
-          await this.debtsService.updateDebtStatus(debtToApplyId, detail.monto);
-
-          // Actualizar el estado del detalle de pago adelantado
-          await this.pagoAdelantadoDetalleRepository.update(savedDetail.id, {
-            estado: 'APLICADO',
-            deudaGeneradaId: debtToApplyId,
+            estado: 'PENDIENTE_APLICACION', // Will be applied via monthly job
           });
 
           this.logger.log(
-            `Applied prepayment to debt ID: ${debtToApplyId}, amount: ${detail.monto}`,
+            `Recorded scheduled credit for month: ${detail.mes}, amount: ${detail.monto}`,
           );
         }
       }

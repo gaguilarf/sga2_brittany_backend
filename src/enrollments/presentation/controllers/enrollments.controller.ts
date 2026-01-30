@@ -24,6 +24,7 @@ import { CreateEnrollmentDto } from '../../domain/dtos/create-enrollment.dto';
 import { UpdateEnrollmentDto } from '../../domain/dtos/update-enrollment.dto';
 import { EnrollmentResponseDto } from '../../domain/dtos/enrollment-response.dto';
 import { MonthlyDebtsService } from '../../application/services/monthly-debts.service';
+import { AccountStatementService } from '../../application/services/account-statement.service';
 import { JwtAuthGuard } from '../../../authentication/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../authentication/infrastructure/guards/roles.guard';
 import { Roles } from '../../../authentication/infrastructure/decorators/roles.decorator';
@@ -37,7 +38,16 @@ export class EnrollmentsController {
   constructor(
     private readonly enrollmentsService: EnrollmentsService,
     private readonly monthlyDebtsService: MonthlyDebtsService,
+    private readonly accountStatementService: AccountStatementService,
   ) {}
+
+  @Get(':id/account-statement')
+  @Roles(1, 2, 3, 4) // All roles
+  @ApiOperation({ summary: 'Get student account statement' })
+  @ApiParam({ name: 'id', description: 'Enrollment ID', type: Number })
+  async getAccountStatement(@Param('id', ParseIntPipe) id: number) {
+    return this.accountStatementService.getAccountStatement(id);
+  }
 
   @Post('monthly-debts/:yearMonth')
   @Roles(1) // Solo Administrador

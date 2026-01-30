@@ -9,18 +9,26 @@ import { DebtsModule } from '../debts/debts.module';
 import { PlansModule } from '../plans/plans.module';
 import { PaymentsModule } from '../payments/payments.module';
 
+import { ConsumoTypeOrmEntity } from './infrastructure/persistence/typeorm/consumos.typeorm-entity';
+import { AccountStatementService } from './application/services/account-statement.service';
+import { DebtTypeOrmEntity } from '../debts/infrastructure/persistence/typeorm/debts.typeorm-entity';
+import { PagoAdelantadoDetalleTypeOrmEntity } from '../payments/infrastructure/persistence/typeorm/pago-adelantado-detalle.typeorm-entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       EnrollmentsTypeOrmEntity,
       StudentProgressTypeOrmEntity,
+      ConsumoTypeOrmEntity,
+      DebtTypeOrmEntity,
+      PagoAdelantadoDetalleTypeOrmEntity,
     ]),
     forwardRef(() => DebtsModule),
     PlansModule,
     forwardRef(() => PaymentsModule),
   ],
   controllers: [EnrollmentsController],
-  providers: [EnrollmentsService, MonthlyDebtsService],
-  exports: [EnrollmentsService, MonthlyDebtsService],
+  providers: [EnrollmentsService, MonthlyDebtsService, AccountStatementService],
+  exports: [EnrollmentsService, MonthlyDebtsService, AccountStatementService],
 })
 export class EnrollmentsModule {}
